@@ -4,142 +4,41 @@ Script for downloading machine learning conference papers
 Author: Justin Chen
 Date: 11/5/2020
 '''
-
 import os
-import shutil
+import json
 import argparse
 import unicodedata
 import configparser
 import urllib.request
 from urllib.error import URLError, HTTPError
-from multiprocessing import Process, cpu_count
+from multiprocessing import Process, Manager, cpu_count
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
+from colorama import Fore, Style
 
-
-'''
-inputs:
-authors          (list)  		  Single string of authors
-last_name        (bool, optional) Extract last name of first author only. Default: False.
-first_name       (bool, optional) Extract first name of first author only. Default: False.
-affiliation      (bool, optional) Extract first author's affiliation. Default: False.
-affiliation_only (bool, optional) Extract first author's affiliation only. Default: False.
-
-outputs:
-name (str) First author or affiliation
-'''
-def get_first_author(authors, last_name=False, first_name=False, affiliation=True, affilition_only=False):
-	name, affiliation = authors[0]
-
-	if not affiliation: return name
-	if affilition_only: return affiliation
-	if last_name: return name.split(' ')[-1]
-	elif first_name: return name.split(' ')[0]
-	return f'{name} {affiliation}'
-
-
-'''
-Combine the authors list from the conference with the authors list on Arxiv.
-Some names on the conference website are not in English. Assuming that all the names on
-Arxiv are in English, but Arxiv does not have the affiliation information.
-
-Assuming NIPS for now. Will handle other conferences later.
-
-inputs:
-conf_authors  (str)  String of author names extracted from the conference website
-arxiv_authors (list) List of author names extracted from Arxiv
-
-output:
-authors (list) List of authors names in English as keys and affiliation as values
-'''
-def format_authors(conf_authors, arxiv_authors):
-	# NIPS author string format
-	authors = []
-	nips_authors = conf_authors.split(' · ')
-
-	'''
-	In some cases, authors lists may differ. Either author(s) are missing or there 
-	are extra the order may also differ
-	'''
-	for nips, arxiv in zip(nips_authors, arxiv_authors):
-		nips = nips.split('(')
-		affiliation = ' '.join(nips[-1])[:-1]
-		name = nips[0]
-		authors.append((arxiv, affiliation))
-
-	return authors
-
-
-'''
-Get all accepted papers from NIPS. In some cases, the name of the final submission is different
-from the name of the paper on Arxiv. May need to use binary classifier for these cases.
-
-inputs:
-url            (str)  		    Link to accepted papers page
-title_kw       (list, optional) Keywords to match in title
-author_kw      (list, optional) Names to match in authors list
-affiliation_kw (list, optional) Names to match in affiliation list
-
-outputs:
-papers (dict) Dictionary of accepted papers with keys as the paper title and value as the authors.
-'''
-def accepted_papers(url, title_kw=None, author_kw=None, affiliation_kw=None):
-	if title_kw: title_kw = [w.lower() for w in title_kw if len(w) > 0]
-	if author_kw: author_kw = [w.lower() for w in author_kw if len(w) > 0]
-	if affiliation_kw: affiliation_kw = [w.lower() for w in affiliation_kw if len(w) > 0]
-
-	resp = urllib.request.urlopen(url)
-	soup = BeautifulSoup(resp.read(), 'html.parser')
-	main = soup.find('main', {'id': 'main'})
-	papers = main.find_all('div')[-1].find_all('p')
-
-	extracted = {}
-	has_title = lambda words, title: any(word in title.lower() for word in words)
-	has_author = lambda names, authors: any(n in authors.lower() for n in names)
-	has_affiliation = lambda aff, authors: any(a in authors.lower() for a in aff)
-
-	for p in papers[2:]:
-		title = p.find('b').text
-		authors = p.find('i').text
-
-		if (title_kw and has_title(title_kw, title)) or (author_kw and has_author(author_kw, authors)) or\
-			(affiliation_kw and has_affiliation(affiliation_kw, authors)):
-			extracted[title] = authors
-
-	return extracted
-
-
-'''
-Assumes the same url format for machine learning conferences
-
-inputs:
-url (str) Conference accepted papers url
-
-output:
-year (str) Year of accepted papers
-'''
-def get_year(url):
-	return url.split('/')[-2]
+from conference import conference as conf
 
 
 '''
 Format filename
 
 inputs:
-filename (str) Format for filename. Any permutation of 'year-auth-title'. Does not
+filename 	(str) Format for filename. Any permutation of 'year-auth-title'. Does not
 			   need to contain all three.
-year  	 (str) Year of paper
-name  	 (str) Author name
-title 	 (str) Paper title
+year  	 	(str) Year of paper
+name  	 	(str) Author name
+affiliation (str) Affiliation
+title 	 	(str) Paper title
 
 outputs:
 filename (str) Formatted filename
 '''
-def format_filename(filename, year, auth, title):
+def format_filename(filename, year, auth, affiliation, title):
 	title = title.lower().replace(':', '')
 	filename = filename.replace('author', auth.lower())
 	filename = filename.replace('year', year)
+	filename = filename.replace('affiliation', affiliation)
 
 	return filename.replace('title', title)+'.pdf'
 
@@ -192,6 +91,31 @@ def verify_pdf(pdf_id, title, version=''):
 
 
 '''
+inputs:
+authors          (list)  		  List of strings of authors
+affiliations 	 (list) 		  List of author affiliations
+first_name       (bool, optional) Extract first name of first author only. Default: False.
+last_name        (bool, optional) Extract last name of first author only. Default: False.
+author_only 	 (bool, optional) Extract first author's name only. Default: True.
+affiliation_only (bool, optional) Extract first author's affiliation only. Default: False.
+
+outputs:
+name (str) First author
+aff  (str) First author's affiliation
+'''
+def get_first_author(authors, affiliations, last_name=False, first_name=False, author_only=True, affilition_only=False):
+	name, aff = authors[0], affiliations[0]
+
+	if first_name and author_only: return name.split(' ')[0], ''
+	if last_name and author_only: return name.split(' ')[-1], ''
+	if first_name and not author_only: return name.split(' ')[0], aff
+	if last_name and not author_only: return name.split(' ')[-1], aff
+	if author_only: return name, ''
+	if affilition_only: return '', aff
+	return name, aff
+
+
+'''
 Remove control characters
 
 inputs:
@@ -219,7 +143,7 @@ href    (str) PDF URL
 updated (str) Date of PDF
 authors (list)
 '''
-def get_pdf_link(title, latest=True, version=''):
+def get_arxiv_link(title, latest=True, version=''):
 	title_query = remove_ctrl_char(title).replace(' ', '%20').replace(':', '')
 	query = f'http://export.arxiv.org/api/query?search_query={title_query}'
 	resp = urllib.request.urlopen(query)
@@ -251,36 +175,38 @@ True if downloaded, else False
 '''
 def download(url, save_dir, filename):
 	save_path = os.path.join(save_dir, filename)
-
 	with urllib.request.urlopen(url) as resp, open(save_path, 'wb') as out:
-		# shutil.copyfileobj(resp, out)
 		file, headers = urllib.request.urlretrieve(url, save_path)
 
 		return len(file) > 0
 
 
-def helper(title, conf_authors, template, save_dir):
-	url, year, arxiv_authors = get_pdf_link(title)
-	authors = format_authors(conf_authors, arxiv_authors)
+'''
+Format and download paper
 
-	if len(authors) > 0:
-		auth = get_first_author(authors, last_name=True)
-
-		if url:
-			year = year.split('-')[0]
-			filename = format_filename(template, year, auth, title)
-			download(url, save_dir, filename)
+inputs:
+title        (str)  Paper title
+authors      (list) Authors
+affiliations (list) Author affiliations
+url          (str)  PDF url
+year         (str)  Publication year
+template     (str)  File name template
+save_dir     (str)  Save directory
+'''
+def save_paper(title, authors, affiliations, url, year, template, save_dir):
+	auth, aff = get_first_author(authors, affiliations, last_name=True)
+	filename = format_filename(template, year, auth, aff, title)
+	download(url, save_dir, filename)
 
 
 '''
 Main execution loop for scraping and downloading papers.
 
 inputs:
-papers   (dict) Collection of papers
+papers   (list) List of dicts of paper meta data
 save_dir (str)  Save directory
 '''
-def scrape(papers, template, save_dir):
-	# successes = 0
+def scrape(papers, year, template, save_dir):
 
 	def batch(iterable, size=1):
 		l = len(iterable)
@@ -289,8 +215,11 @@ def scrape(papers, template, save_dir):
 
 	pbar = tqdm(total=len(papers))
 
-	for block in batch(list(papers.items()), cpu_count()):
-		procs = [Process(target=helper, args=(title, conf_authors, template, save_dir,)) for title, conf_authors in block]
+	for block in batch(papers, cpu_count()):
+		procs = []
+		for paper in block:
+			args = (paper['title'], paper['authors'], paper['affiliations'], paper['url'], year, template, save_dir,)
+			procs.append(Process(target=save_paper, args=args))
 			
 		for p in procs: p.start()
 		for p in procs: p.join()
@@ -299,7 +228,7 @@ def scrape(papers, template, save_dir):
 
 	pbar.close()
 	_, _, files = next(os.walk(save_dir))
-	successes = len(files)
+	successes = len([f for f in files if f.endswith('.pdf')])
 	print(f'downloaded {successes} papers')
 
 
@@ -308,22 +237,23 @@ def main():
 	config.read('config.ini')
 	cfg = config['DEFAULT']
 
-	url = cfg['url']
+	name = cfg['conference']
+	year = cfg['year']
 	title_kw = cfg['title_kw'].split(',')
 	author_kw = cfg['author_kw'].split(',')
 	affiliation_kw = cfg['affiliation_kw'].split(',')
-
-	papers = accepted_papers(url, title_kw=title_kw, author_kw=author_kw, affiliation_kw=affiliation_kw)
-
-	print(f'found: {len(papers)} papers')
-
 	template = cfg['template']
 	save_dir = cfg['save_dir']
+
+	neurips = conf.NeurIPS(name, year)
+	papers = neurips.accepted_papers(title_kw=title_kw, author_kw=author_kw, affiliation_kw=affiliation_kw)
+
+	print(f'found: {len(papers)} papers')
 
 	if not os.path.isdir(save_dir):
 		os.makedirs(save_dir, exist_ok=True) 
 
-	scrape(papers, template, save_dir)
+	scrape(papers, year, template, save_dir)
 
 
 if __name__ == '__main__':
