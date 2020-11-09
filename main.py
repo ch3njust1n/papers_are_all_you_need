@@ -5,11 +5,54 @@ Author: Justin Chen
 Date: 11/5/2020
 '''
 import os
+import time
 import argparse
 import configparser
+from multiprocessing import Process, Manager, cpu_count
 
 from conference import conference as conf
 from conference import utils
+
+'''
+inputs:
+name (str) Name of conference
+year (str) Year of conference
+
+outputs:
+conference (conference)
+'''
+def get_conf(name, year):
+	if name.lower() in ['nips', 'neurips']:
+		return conf.NeurIPS(year)
+
+	print(f'{name} does not exist')
+	return None
+
+
+'''
+inputs:
+name 		   (str)  Conference name
+year 		   (str)  Year of conference
+save_dir 	   (str)  Directory to save papers to
+template 	   (str)  String of file name template
+title_kw 	   (list) Title keywords
+author_kw 	   (list) Author names
+affiliation_kw (list) Afiliation/lab names
+'''
+def collect(name, year, save_dir, template, title_kw, author_kw, affiliation_kw):
+
+	for yr in utils.get_years(year):
+		cf = get_conf(name, yr)
+
+		if not cf: return
+
+		papers = cf.accepted_papers()
+		total_accepted = len(papers)
+		papers = cf.query_papers(papers, title_kw=title_kw, author_kw=author_kw, affiliation_kw=affiliation_kw)
+
+		print(f'{name} {yr}\ttotal: {len(papers)} papers\tqueried: {len(papers)} papers')
+
+		utils.scrape(papers, yr, template, save_dir)
 
 
 def main():
@@ -25,20 +68,14 @@ def main():
 	template = cfg['template']
 	save_dir = cfg['save_dir']
 
-	cf = None
-	if name.lower() in ['nips', 'neurips']:
-		cf = conf.NeurIPS(year)
-
-	papers = cf.accepted_papers()
-	utils.save_json(save_dir, f'neurips_{year}', papers)
-	papers = cf.query_papers(papers, title_kw=title_kw, author_kw=author_kw, affiliation_kw=affiliation_kw)
-
-	print(f'found: {len(papers)} papers')
-
 	if not os.path.isdir(save_dir):
 		os.makedirs(save_dir, exist_ok=True) 
 
-	# utils.scrape(papers, year, template, save_dir)
+	start_time = time.time()
+	collect(name, year, save_dir, template, title_kw, author_kw, affiliation_kw)
+	end_time = time.time()
+
+	print(f'runtime: {end_time - start_time} (sec)')
 
 
 if __name__ == '__main__':

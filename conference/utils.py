@@ -3,14 +3,19 @@ Author: Justin Chen
 Date: 11/8/2020
 '''
 import os
+import re
 import json
+import platform
 import unicodedata
 import urllib.request
 from urllib.error import URLError, HTTPError
-from multiprocessing import Process, Manager, cpu_count
+from threading import Thread
+from multiprocessing import Process, cpu_count
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
+from colorama import Fore, Style
+
 
 '''
 Save json data
@@ -22,6 +27,28 @@ data     (list) JSON object
 def save_json(save_dir, filename, data):
 	with open(os.path.join(save_dir, filename+'.json'), 'w', encoding='utf-8') as file:
 		json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+'''
+Get the year generator
+: For range of years e.g. 2010:2020
+, List of years, not necessarily consecutive list e.g. 1987, 2018, 2020
+# Single numbers for just that one year e.g. 2020
+
+inputs:
+year (str) Year designation
+
+outputs:
+years (list) List of years
+'''
+def get_years(year):
+	if len(year) == 0: []
+
+	if re.match('\d+:\d+', year):
+		year = year.split(':') 
+		return range(int(year[0]), int(year[1])+1)
+
+	return [y for y in year.split(',') if len(y) > 0]
 
 
 '''
@@ -178,11 +205,14 @@ outputs:
 True if downloaded, else False
 '''
 def download(url, save_dir, filename):
-	save_path = os.path.join(save_dir, filename)
-	with urllib.request.urlopen(url) as resp, open(save_path, 'wb') as out:
-		file, headers = urllib.request.urlretrieve(url, save_path)
+	try:
+		save_path = os.path.join(save_dir, filename)
+		with urllib.request.urlopen(url) as resp, open(save_path, 'wb') as out:
+			file, headers = urllib.request.urlretrieve(url, save_path)
 
-		return len(file) > 0
+			return len(file) > 0
+	except URLError as e:
+		return False
 
 
 '''
@@ -200,7 +230,9 @@ save_dir     (str)  Save directory
 def save_paper(title, authors, affiliations, url, year, template, save_dir):
 	auth, aff = get_first_author(authors, affiliations, last_name=True)
 	filename = format_filename(template, year, auth, aff, title)
-	download(url, save_dir, filename)
+	status = download(url, save_dir, filename)
+	
+	if not status: print(f'{Fore.RED}err{Style.RESET_ALL}: {title}')
 
 
 '''
@@ -219,11 +251,13 @@ def scrape(papers, year, template, save_dir):
 
 	pbar = tqdm(total=len(papers))
 
-	for block in batch(papers, cpu_count()):
+	# for block in batch(papers, cpu_count()):
+	for block in batch(papers, 16):
 		procs = []
 		for paper in block:
 			args = (paper['title'], paper['authors'], paper['affiliations'], paper['url'], year, template, save_dir,)
-			procs.append(Process(target=save_paper, args=args))
+			# procs.append(Process(target=save_paper, args=args))
+			procs.append(Thread(target=save_paper, args=args))
 			
 		for p in procs: p.start()
 		for p in procs: p.join()
