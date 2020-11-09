@@ -11,11 +11,12 @@ Currently only supports NeurIPS. Looking for contributors to expand this to othe
 
 Edit `config.ini` with your parameters. It's ok to leave `title_kw`, `author_kw`, or `affiliation_kw` blank.
 
-`template` is how your research paper file names will be formatted e.g. `year-author-title` will save papers as the year the paper was last updated on Arxiv, followed by the first author's last name, followed by the title, all in lower case. You can rearrange these three pieces.
+`template` is how your research paper file names will be formatted e.g. `year-author-title` will save papers as the year the paper was last published, followed by the first author's name, followed by the title, all in lower case. You can rearrange these three pieces.
 
 ```
 [DEFAULT]
-url = https://nips.cc/Conferences/2020/AcceptedPapersInitial
+conference = neurips
+year = 2020
 title_kw = graph
 author_kw = 
 affiliation_kw = 
