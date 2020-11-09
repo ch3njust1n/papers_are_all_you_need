@@ -2,18 +2,15 @@ import json
 import urllib.request
 from urllib.error import URLError, HTTPError
 from multiprocessing import Process, Manager, cpu_count, Value
+from conference import utils
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-from pymongo import MongoClient
 from colorama import Fore, Style
 
+
 class NeurIPS(object):
-	def __init__(self, name, year):
-		self.client = MongoClient('localhost', 27017)
-		self.db = self.client[name]
-		self.col = self.db[year]
-		self.name = name
+	def __init__(self, year):
 		self.year = year
 		self.base = f'https://papers.nips.cc'
 
@@ -96,39 +93,17 @@ class NeurIPS(object):
 
 		return list(proceedings)
 
-
-	'''
-	Save the NIPS meta data
-
-	inputs:
-	papers (list) List of dicts of paper meta data
-
-	outputs:
-	inserted_ids (list) List of Mongo Document ObjectIds
-	'''
-	def save(self, papers):
-		return self.col.insert_many(papers).inserted_ids
-
-		
+	
 	'''
 	Get all accepted papers from NIPS. In some cases, the name of the final submission is different
 	from the name of the paper on Arxiv. May need to use binary classifier for these cases.
 
-	inputs:
-	title_kw       (list, optional) Keywords to match in title
-	author_kw      (list, optional) Names to match in authors list
-	affiliation_kw (list, optional) Names to match in affiliation list
-
 	outputs:
 	papers (list) List of dicts of accepted papers with keys as the paper title and value as the authors.
 	'''
-	def accepted_papers(self, title_kw=None, author_kw=None, affiliation_kw=None):
+	def accepted_papers(self):
 		# TODO: Should check if the db previously loaded this conference. If so, then load from there and skip downloading
 		# metadata again
-
-		if title_kw: title_kw = [w.lower() for w in title_kw if len(w) > 0]
-		if author_kw: author_kw = [w.lower() for w in author_kw if len(w) > 0]
-		if affiliation_kw: affiliation_kw = [w.lower() for w in affiliation_kw if len(w) > 0]
 
 		resp = urllib.request.urlopen(self.get_url(self.year))
 		soup = BeautifulSoup(resp.read(), 'html.parser')
@@ -141,10 +116,30 @@ class NeurIPS(object):
 			if atag['href'].startswith('/paper'):
 				papers.append({'title': atag.text, 'href': ''.join([self.base, atag['href']]), 'authors': t.find('i').text})
 		
-		papers = self.get_metadata(papers)
-		self.save(papers)
+		return self.get_metadata(papers)
+
+
+	'''
+	Get all accepted papers from NIPS. In some cases, the name of the final submission is different
+	from the name of the paper on Arxiv. May need to use binary classifier for these cases.
+
+	inputs:
+	papers 		   (list) 			List of dicts of papers
+	title_kw       (list, optional) Keywords to match in title
+	author_kw      (list, optional) Names to match in authors list
+	affiliation_kw (list, optional) Names to match in affiliation list
+
+	outputs:
+	papers (list) List of dicts of accepted papers with keys as the paper title and value as the authors.
+	'''
+	def query_papers(self, papers, title_kw=None, author_kw=None, affiliation_kw=None):
 
 		extracted = []
+
+		if title_kw: title_kw = [w.lower() for w in title_kw if len(w) > 0]
+		if author_kw: author_kw = [w.lower() for w in author_kw if len(w) > 0]
+		if affiliation_kw: affiliation_kw = [w.lower() for w in affiliation_kw if len(w) > 0]
+
 		has_title = lambda words, title: any(word in title.lower() for word in words)
 		has_author = lambda names, authors: any(n in authors.lower() for n in names)
 		has_affiliation = lambda aff, authors: any(a in authors.lower() for a in aff)
