@@ -11,6 +11,7 @@ import urllib.request
 from urllib.error import URLError, HTTPError
 from threading import Thread
 from multiprocessing import Process, cpu_count
+from pathlib import Path
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
@@ -25,6 +26,7 @@ filename (str)  Name of output file
 data     (list) JSON object
 '''
 def save_json(save_dir, filename, data):
+
 	with open(os.path.join(save_dir, filename+'.json'), 'w', encoding='utf-8') as file:
 		json.dump(data, file, ensure_ascii=False, indent=4)
 
@@ -42,6 +44,7 @@ outputs:
 years (list) List of years
 '''
 def get_years(year):
+
 	if len(year) == 0: []
 
 	if re.match('\d+:\d+', year):
@@ -66,6 +69,7 @@ outputs:
 filename (str) Formatted filename
 '''
 def format_filename(filename, year, auth, affiliation, title):
+
 	title = title.lower().replace(':', '')
 	filename = filename.replace('author', auth.lower())
 	filename = filename.replace('year', year)
@@ -85,6 +89,7 @@ outputs:
 pdf_id (str) PDF id of version number
 '''
 def get_pdf_version(pdf_ids, version=-1):
+
 	version_ids, v = [], 1
 
 	for p in pdf_ids:
@@ -107,6 +112,7 @@ outputs:
 match (bool) True if the id matches the given title
 '''
 def verify_pdf(pdf_id, title, version=''):
+
 	url, resp = f'https://arxiv.org/abs/{pdf_id}', ''
 	
 	if len(version) > 0: url += f'v{version}'
@@ -135,6 +141,7 @@ name (str) First author
 aff  (str) First author's affiliation
 '''
 def get_first_author(authors, affiliations, last_name=False, first_name=False, author_only=True, affilition_only=False):
+
 	name, aff = authors[0], affiliations[0]
 
 	if first_name and author_only: return name.split(' ')[0], ''
@@ -156,6 +163,7 @@ output:
 s (str) Cleaned string
 '''
 def remove_ctrl_char(s):
+
 	s = ''.join(c for c in s if unicodedata.category(c)[0]!='C')
 	return ' '.join(s.split('\t'))
 
@@ -175,6 +183,7 @@ updated (str) Date of PDF
 authors (list)
 '''
 def get_arxiv_link(title, latest=True, version=''):
+
 	title_query = remove_ctrl_char(title).replace(' ', '%20').replace(':', '')
 	query = f'http://export.arxiv.org/api/query?search_query={title_query}'
 	resp = urllib.request.urlopen(query)
@@ -205,12 +214,17 @@ outputs:
 True if downloaded, else False
 '''
 def download(url, save_dir, filename):
+
 	try:
 		save_path = os.path.join(save_dir, filename)
-		with urllib.request.urlopen(url) as resp, open(save_path, 'wb') as out:
-			file, headers = urllib.request.urlretrieve(url, save_path)
 
-			return len(file) > 0
+		if not Path(save_path).is_file():
+			with urllib.request.urlopen(url) as resp, open(save_path, 'wb') as out:
+				file, headers = urllib.request.urlretrieve(url, save_path)
+
+				return len(file) > 0
+		else:
+			return True
 	except URLError as e:
 		return False
 
@@ -228,6 +242,7 @@ template     (str)  File name template
 save_dir     (str)  Save directory
 '''
 def save_paper(title, authors, affiliations, url, year, template, save_dir):
+
 	auth, aff = get_first_author(authors, affiliations, last_name=True)
 	filename = format_filename(template, year, auth, aff, title)
 	status = download(url, save_dir, filename)
@@ -245,18 +260,17 @@ save_dir (str)  Save directory
 def scrape(papers, year, template, save_dir):
 
 	def batch(iterable, size=1):
+
 		l = len(iterable)
 		for i in range(0, l, size):
 			yield iterable[i:min(i + size, l)]
 
 	pbar = tqdm(total=len(papers))
 
-	# for block in batch(papers, cpu_count()):
 	for block in batch(papers, 16):
 		procs = []
 		for paper in block:
 			args = (paper['title'], paper['authors'], paper['affiliations'], paper['url'], year, template, save_dir,)
-			# procs.append(Process(target=save_paper, args=args))
 			procs.append(Thread(target=save_paper, args=args))
 			
 		for p in procs: p.start()
