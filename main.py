@@ -22,6 +22,7 @@ outputs:
 conference (conference)
 '''
 def get_conf(name, year):
+
 	if name.lower() in ['nips', 'neurips']:
 		return conf.NeurIPS(year)
 
@@ -56,6 +57,7 @@ def collect(name, year, save_dir, template, title_kw, author_kw, affiliation_kw)
 
 
 def main():
+
 	config = configparser.ConfigParser(allow_no_value=True)
 	config.read('config.ini')
 	cfg = config['DEFAULT']

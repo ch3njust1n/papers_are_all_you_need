@@ -1,3 +1,4 @@
+import datetime
 import json
 from json.decoder import JSONDecodeError
 import urllib.request
@@ -13,17 +14,32 @@ from colorama import Fore, Style
 
 class NeurIPS(object):
 	def __init__(self, year):
+
 		self.year = str(year)
 		self.base = f'https://papers.nips.cc'
 		self.repo = f'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/neurips'
-		
+
 
 	'''
 	outputs:
 	url (str) Formatted url for conference proceedings page
 	'''
 	def get_proceedings_url(self):
+
 		return f'{self.base}/paper/{self.year}'
+
+
+	'''
+	Format the pdf url
+
+	inputs:
+	hash_id (str) Paper hash
+
+	outputs:
+	url (str) Formatted URL for given paper
+	'''
+	def format_pdf_url(self, hash_id):
+		return '/'.join([self.base, 'paper', self.year, 'file', hash_id])+'-Paper.pdf'
 
 
 	'''
@@ -37,8 +53,9 @@ class NeurIPS(object):
 	url 		(str) 						   URL to paper's meta data
 	'''
 	def build_proceedings(self, proceedings, errors, title, authors, url):
+
 		hash_id = url.split('/')[-1].split('-')[0]
-		paper_url = '/'.join([self.base, 'paper', self.year, 'file', hash_id])+'-Paper.pdf'
+		paper_url = self.format_pdf_url(hash_id)
 
 		try:
 			resp = urllib.request.urlopen(url)
@@ -73,6 +90,7 @@ class NeurIPS(object):
 	papers (list) List of dicts of papers updated with meta data
 	'''
 	def get_source_metadata(self, papers):
+
 		print('collecting meta data...')
 
 		def batch(iterable, size=1):
@@ -101,6 +119,108 @@ class NeurIPS(object):
 
 		return list(proceedings)
 
+
+	'''
+	Format authors list
+
+	inputs:
+	authors (str) Author names separated by commas
+
+	outputs:
+	authors (list) List of dicts of author information
+	'''
+	def format_auths(self, authors):
+		res = []
+
+		for a in authors.split(', '):
+			a = a.split(' ')
+			res.append({
+				'given_name': a[:-1],
+				'family_name': a[-1] if len(a) > 1 else '',
+				'institution': None
+			})
+
+		return res
+
+
+	'''
+	Get list of papers from proceedings page
+	
+	outputs:
+	papers (dict) Key is paper's title and value is dict of paper's metadata
+	'''
+	def proceedings(self):
+
+		resp = urllib.request.urlopen(self.get_proceedings_url())
+		soup = BeautifulSoup(resp.read(), 'html.parser')
+		tags = soup.find_all('li')
+		
+		papers = {}
+
+		for t in tags:
+			atag = t.find('a')
+			if atag['href'].startswith('/paper'):
+				papers[atag.text] = {'title': atag.text, 'href': ''.join([self.base, atag['href']]), 'authors': self.format_auths(t.find('i').text)}
+
+		return papers
+
+
+	'''
+	This should only be called when the conference has not occurred yet, but accepted papers were released. In this window,
+	NeurIPS has not posted the meta data yet.
+
+	outputs:
+	authors (list) List of dicts of authors name and affiliation
+	'''
+	def pre_proceedings(self):
+
+		def neurips_authors(pre_authors):
+			'''
+			In some cases, authors lists may differ. Either author(s) are missing or there 
+			are extra the order may also differ
+			'''
+			authors = []
+
+			for auth in pre_authors.split(' · '):
+				auth = auth.split('(')
+				affiliation = auth[-1][:-1]
+				name = auth[0].strip().split()
+
+				authors.append({
+					'given_name': ' '.join(name[:-1]),
+					'family_name': name[-1] if len(name) > 1 else '',
+					'institution': affiliation
+				})
+
+			return authors
+
+
+		now = datetime.datetime.now()
+
+		pre_url = f'https://nips.cc/Conferences/{now.year}/AcceptedPapersInitial'
+		pro_url = self.get_proceedings_url()
+
+		resp = urllib.request.urlopen(pre_url)
+		soup = BeautifulSoup(resp.read(), 'html.parser')
+		main = soup.find('main', {'id': 'main'})
+		accepted = main.find_all('div')[-1].find_all('p')
+		papers, proceedings = [], self.proceedings()
+
+		for p in accepted[2:]:
+			title = p.find('b').text
+			authors = neurips_authors(p.find('i').text)
+			href, hash_id = '', ''
+
+			try:
+				href = proceedings[title]['href']
+				hash_id = href.split('/')[-1].split('-')[0]
+			except KeyError:
+				pass
+
+			papers.append({'title': title, 'url': self.format_pdf_url(hash_id), 'authors': authors, 'award': [], 'hash': hash_id})
+
+		return papers
+
 	
 	'''
 	Get all accepted papers from NIPS. In some cases, the name of the final submission is different
@@ -110,32 +230,13 @@ class NeurIPS(object):
 	papers (list) List of dicts of accepted papers with keys as the paper title and value as the authors.
 	'''
 	def source_accepted_papers(self):
-		def format_auths(authors):
-			res = []
-			for a in authors.split(', '):
-				a = a.split(' ')
-				res.append({
-					"given_name": a[0],
-					"family_name": a[1] if len(a) > 1 else '',
-					"institution": None
-				})
-			return res
 
-		resp = urllib.request.urlopen(self.get_proceedings_url())
-		soup = BeautifulSoup(resp.read(), 'html.parser')
-		tags = soup.find_all('li')
-		
-		papers = []
+		now = datetime.datetime.now()
 
-		for t in tags:
-			atag = t.find('a')
-			if atag['href'].startswith('/paper'):
-				papers.append({'title': atag.text, 'href': ''.join([self.base, atag['href']]), 'authors': format_auths(t.find('i').text)})
-
-		papers = self.get_metadata(papers)
-		utils.save_json(save_dir, f'{name}_{yr}', papers)
-
-		return papers
+		if now.year == int(self.year):
+			return self.pre_proceedings()
+		else: 
+			return self.get_source_metadata(self.proceedings().values())
 
 
 	'''
@@ -145,25 +246,10 @@ class NeurIPS(object):
 	data (list) List of dicts of paper meta data
 	'''
 	def accepted_papers(self):
+
 		url = '/'.join([self.repo, f'neurips_{self.year}.json'])
 		with urllib.request.urlopen(url) as file:
 			return json.loads(file.read().decode())
-
-
-	'''
-	This should only be called when the conference has not occurred yet, but accepted papers were released. In this window,
-	NeurIPS has not posted the meta data yet.
-
-	outputs:
-
-	'''
-	def preconference(self):
-
-		preconf_url = f'https://nips.cc/Conferences/{self.year}/AcceptedPapersInitial'
-		proceedings_url = self.get_proceedings_url()
-
-
-
 
 
 	'''
