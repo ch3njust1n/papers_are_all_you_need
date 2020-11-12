@@ -10,8 +10,9 @@ import argparse
 import configparser
 from multiprocessing import Process, Manager, cpu_count
 
-from conference import conference as conf
-from conference import utils
+import papers.conference as conf
+import papers.utils as utils
+
 
 '''
 inputs:
