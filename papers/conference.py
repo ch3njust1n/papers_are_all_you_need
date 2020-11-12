@@ -16,10 +16,29 @@ from colorama import Fore, Style
 
 
 class Conference(object):
-	def __init__(self, year, repo):
+	def __init__(self, name, year):
 		
+		self.name = name
 		self.year = str(year)
-		self.repo = repo
+		self.conf = {
+			'neurips': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/neurips',
+			'icml': '',
+			'iclr': '',
+			'cvpr': '',
+			'emnlp': '',
+			'aaai': '',
+			'sysml': '',
+			'naacl': '',
+			'icme': '',
+			'chil': '',
+			'icip': '',
+			'ijcai': '',
+			'acl': '',
+			'sigir': '',
+			'iccv': '',
+			'eccv': ''
+		}
+		self.repo = self.conf[name]
 
 	'''
 	Get meta data of accepted papers from pseudo-api
@@ -29,18 +48,9 @@ class Conference(object):
 	'''
 	def accepted_papers(self):
 
-		url = '/'.join([self.repo, f'neurips_{self.year}.json'])
+		url = '/'.join([self.repo, f'{self.name}_{self.year}.json'])
 		with urllib.request.urlopen(url) as file:
 			return json.loads(file.read().decode())
-
-
-class NeurIPS(Conference):
-	def __init__(self, year, repo='https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/neurips'):
-		
-		super().__init__(year, repo)
-		self.name = 'neurips'
-		self.year = str(year)
-		self.repo = repo
 
 
 	'''
@@ -79,8 +89,3 @@ class NeurIPS(Conference):
 					'hash': p['hash'], 'url': p['url']})
 
 		return extracted
-
-
-class ICML(object):
-	def __init__(self, year):
-		self.year = year
