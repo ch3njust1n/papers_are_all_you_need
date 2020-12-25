@@ -6,12 +6,12 @@ Date: 11/5/2020
 '''
 import os
 import time
-import argparse
 import configparser
 from multiprocessing import Process, Manager, cpu_count
 
-from conference import conference as conf
-from conference import utils
+from papers.conference import Conference
+import papers.utils as utils
+
 
 '''
 inputs:
@@ -23,8 +23,10 @@ conference (conference)
 '''
 def get_conf(name, year):
 
-	if name.lower() in ['nips', 'neurips']:
-		return conf.NeurIPS(year)
+	name = name.lower()
+
+	if name in ['nips', 'neurips']:
+		return Conference(name, year)
 
 	print(f'{name} does not exist')
 	return None
@@ -51,7 +53,7 @@ def collect(name, year, save_dir, template, title_kw, author_kw, affiliation_kw)
 		total_accepted = len(papers)
 		papers = cf.query_papers(papers, title_kw=title_kw, author_kw=author_kw, affiliation_kw=affiliation_kw)
 
-		print(f'{name} {yr}\ttotal: {len(papers)} papers\tqueried: {len(papers)} papers')
+		print(f'{name} {yr} - found {len(papers)} papers')
 
 		utils.scrape(papers, yr, template, save_dir)
 
