@@ -70,9 +70,9 @@ filename (str) Formatted filename
 '''
 def format_filename(filename, year, auth, affiliation, title):
 
-	title = title.lower().replace(':', '')
+	title = title.lower().replace(':', '').replace('/', ' ')
 	filename = filename.replace('author', auth.lower())
-	filename = filename.replace('year', year)
+	filename = filename.replace('year', str(year))
 	filename = filename.replace('affiliation', affiliation)
 
 	return filename.replace('title', title)+'.pdf'

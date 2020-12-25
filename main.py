@@ -6,7 +6,6 @@ Date: 11/5/2020
 '''
 import os
 import time
-import argparse
 import configparser
 from multiprocessing import Process, Manager, cpu_count
 
