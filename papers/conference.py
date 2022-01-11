@@ -1,6 +1,6 @@
 '''
 '''
-
+import sys
 import datetime
 import json
 from json.decoder import JSONDecodeError
@@ -80,8 +80,13 @@ class Conference(object):
 
 		for p in papers:
 			title = p['title']
-			authors = [' '.join([a['given_name'], a['family_name']]) for a in p['authors']]
-			affiliations = [a['institution'] for a in p['authors']]
+			try:
+				authors = [' '.join([' '.join(a['given_name']), a['family_name']]) for a in p['authors']]
+				affiliations = [a['institution'] for a in p['authors']]
+			except:
+				print(p)
+				sys.exit()
+
 
 			if (title_kw and has_title(title_kw, title)) or (author_kw and has_author(author_kw, authors)) or\
 				(affiliation_kw and has_affiliation(affiliation_kw, affiliations)):
