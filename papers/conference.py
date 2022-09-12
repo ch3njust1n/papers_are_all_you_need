@@ -25,9 +25,10 @@ class Conference(object):
 			'icml': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/icml',
 			'aistats': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/aistats',
 			'acml': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/acml',
-			'corl': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/corl'
+			'corl': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/corl',
+			'uai': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/uai',
+			'cvpr': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/cvpr'
 			# 'iclr': '',
-			# 'cvpr': '',
 			# 'emnlp': '',
 			# 'aaai': '',
 			# 'sysml': '',

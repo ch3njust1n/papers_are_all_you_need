@@ -12,6 +12,10 @@
 
 **ACML**: 2010-2021
 
+**UAI** 2019-2022
+
+**CVPR** 2022
+
 Download research papers:
 1. Containing keywords in the title
 2. By your favorite authors
