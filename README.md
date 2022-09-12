@@ -1,5 +1,11 @@
 # Papers Are All You Need
 
+## Supported Conferences:
+
+**NeurIPS**: 1987-2021
+**ICML**: 2013-2022
+**AISTATS**: 2007, 2009-2022
+
 Download research papers:
 1. Containing keywords in the title
 2. By your favorite authors
