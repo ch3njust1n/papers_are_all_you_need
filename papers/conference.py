@@ -24,6 +24,8 @@ class Conference(object):
 			'neurips': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/neurips',
 			'icml': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/icml',
 			'aistats': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/aistats',
+			'acml': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/acml',
+			'corl': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/corl'
 			# 'iclr': '',
 			# 'cvpr': '',
 			# 'emnlp': '',
