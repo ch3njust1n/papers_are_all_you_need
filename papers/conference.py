@@ -22,7 +22,8 @@ class Conference(object):
 		self.year = str(year)
 		self.conf = {
 			'neurips': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/neurips',
-			'icml': '',
+			'icml': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/icml',
+			'aistats': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/aistats',
 			'iclr': '',
 			'cvpr': '',
 			'emnlp': '',
