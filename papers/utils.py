@@ -214,15 +214,19 @@ outputs:
 True if downloaded, else False
 '''
 def download(url, save_dir, filename):
+	paper_urls = []
+	if isinstance(url, str): paper_urls.append(url)
+	if isinstance(url, list): paper_urls.extend(url)
 
 	try:
 		save_path = os.path.join(save_dir, filename)
 
 		if not Path(save_path).is_file():
-			with urllib.request.urlopen(url) as resp, open(save_path, 'wb') as out:
-				file, headers = urllib.request.urlretrieve(url, save_path)
+			for link in paper_urls:
+				with urllib.request.urlopen(link) as resp, open(save_path, 'wb') as out:
+					file, headers = urllib.request.urlretrieve(link, save_path)
 
-				return len(file) > 0
+			return len(file) > 0
 		else:
 			return True
 	except URLError as e:
