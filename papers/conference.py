@@ -24,20 +24,20 @@ class Conference(object):
 			'neurips': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/neurips',
 			'icml': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/icml',
 			'aistats': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/aistats',
-			'iclr': '',
-			'cvpr': '',
-			'emnlp': '',
-			'aaai': '',
-			'sysml': '',
-			'naacl': '',
-			'icme': '',
-			'chil': '',
-			'icip': '',
-			'ijcai': '',
-			'acl': '',
-			'sigir': '',
-			'iccv': '',
-			'eccv': ''
+			# 'iclr': '',
+			# 'cvpr': '',
+			# 'emnlp': '',
+			# 'aaai': '',
+			# 'sysml': '',
+			# 'naacl': '',
+			# 'icme': '',
+			# 'chil': '',
+			# 'icip': '',
+			# 'ijcai': '',
+			# 'acl': '',
+			# 'sigir': '',
+			# 'iccv': '',
+			# 'eccv': ''
 		}
 		self.repo = self.conf[name]
 
@@ -91,7 +91,14 @@ class Conference(object):
 
 			if (title_kw and has_title(title_kw, title)) or (author_kw and has_author(author_kw, authors)) or\
 				(affiliation_kw and has_affiliation(affiliation_kw, affiliations)):
-				extracted.append({'title': title, 'authors': authors, 'affiliations': affiliations, 'award': p['award'],
-					'hash': p['hash'], 'url': p['url']})
+
+				extracted.append({
+					'title': title, 
+					'authors': authors, 
+					'affiliations': affiliations, 
+					'award': p.get('award', None),
+					'hash': p.get('hash', None), 
+					'url': p.get('url', None)
+				})
 
 		return extracted
