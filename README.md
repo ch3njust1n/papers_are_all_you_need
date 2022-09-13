@@ -15,10 +15,6 @@
 |   [WACV](https://www.thecvf.com/)            | 2020-2022                    | 3/22  (14%)  | 100%          | 100%          | 0%            | 
 
 
-Download research papers:
-1. Containing keywords in the title
-2. By your favorite authors
-
 
 ## Usage
 
