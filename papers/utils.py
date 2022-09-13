@@ -222,9 +222,9 @@ def download(url, save_dir, filename):
 		save_path = os.path.join(save_dir, filename)
 
 		if not Path(save_path).is_file():
-			for link in paper_urls:
+			for i, link in enumerate(paper_urls):
 				with urllib.request.urlopen(link) as resp, open(save_path, 'wb') as out:
-					file, headers = urllib.request.urlretrieve(link, save_path)
+					file, headers = urllib.request.urlretrieve(link, f'{save_path}_{i}')
 
 			return len(file) > 0
 		else:
