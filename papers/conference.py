@@ -28,8 +28,8 @@ class Conference(object):
 			'corl': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/corl',
 			'uai': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/uai',
 			'cvpr': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/cvpr',
-			'iccv': '',
-			'wacv': ''
+			'iccv': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iccv',
+			'wacv': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/wacv'
 			# 'iclr': '',
 			# 'emnlp': '',
 			# 'aaai': '',
