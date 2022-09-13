@@ -25,7 +25,7 @@ def get_conf(name, year):
 
 	name = name.lower()
 
-	if name in ['nips', 'neurips', 'icml', 'aistats', 'corl', 'acml', 'cvpr', 'uai']:
+	if name in ['nips', 'neurips', 'icml', 'aistats', 'corl', 'acml', 'cvpr', 'uai', 'iccv', 'wacv']:
 		return Conference(name, year)
 
 	print(f'{name} does not exist')
