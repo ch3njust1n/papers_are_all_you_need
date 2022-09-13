@@ -11,7 +11,8 @@
 |   [ICCV](https://www.thecvf.com/)            | 2013, 2015, 2017, 2019, 2021 | 5/18  (28%)   |
 |   [ICML](https://icml.cc/)                   | 2013-2022	                  | 10/21 (48%)   |
 |   [NeurIPS](https://nips.cc/)	               | 1987-2021                    | 35/35 (100%)  |
-|   [UAI](https://www.auai.org/)               | 2019-2022                    | 4/37  (11%)   | 
+|   [UAI](https://www.auai.org/)               | 2019-2022                    | 4/37  (11%)   |
+|   [WACV](https://www.thecvf.com/)            | 2020-2022                    | 3/22  (14%)   | 
 
 
 Download research papers:
