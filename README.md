@@ -1,20 +1,19 @@
 # Papers Are All You Need
 
-## Supported Conferences:
+**Supported Conferences:**
 
-**NeurIPS**: 1987-2021
+|  Conference 	|  Years 	                   |
+|---------------|------------------------------|
+|   NeurIPS	    | 1987-2021                    |
+|   ICML        | 2013-2022	                   |
+|   AISTATS     | 2007, 2009-2022              |
+|   CoRL        | 2017-2021                    |
+|   AISTATS     | 2007, 2009-2022              |
+|   ACML        | 2010-2021                    |
+|   UAI         | 2019-2022                    |
+|   CVPR        | 2013-2022                    |
+|   ICCV        | 2013, 2015, 2017, 2019, 2021 |
 
-**ICML**: 2013-2022
-
-**AISTATS**: 2007, 2009-2022
-
-**CoRL**: 2017-2021
-
-**ACML**: 2010-2021
-
-**UAI** 2019-2022
-
-**CVPR** 2013-2022
 
 Download research papers:
 1. Containing keywords in the title
