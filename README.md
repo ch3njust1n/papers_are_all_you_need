@@ -1,26 +1,24 @@
 # Papers Are All You Need
 
-**Supported Conferences:**
 
-|  Conference 	|  Years 	                   |
-|---------------|------------------------------|
-|   NeurIPS	    | 1987-2021                    |
-|   ICML        | 2013-2022	                   |
-|   AISTATS     | 2007, 2009-2022              |
-|   CoRL        | 2017-2021                    |
-|   AISTATS     | 2007, 2009-2022              |
-|   ACML        | 2010-2021                    |
-|   UAI         | 2019-2022                    |
-|   CVPR        | 2013-2022                    |
-|   ICCV        | 2013, 2015, 2017, 2019, 2021 |
+**Supported Conferences:**
+|  Conference 	                               |  Years 	                  | Complete     |
+|----------------------------------------------|------------------------------|---------------|
+|   [ACML](https://www.acml-conf.org/)         | 2010-2021                    | 12/13 (92%)   |
+|   [AISTATS](https://aistats.org/)            | 2007, 2009-2022              | 15/26 (58%)   |
+|   [CoRL](https://corl2022.org/)              | 2017-2021                    | 5/5   (100%)  |
+|   [CVPR](https://www.thecvf.com/)            | 2013-2022                    | 10/35 (29%)   |
+|   [ICCV](https://www.thecvf.com/)            | 2013, 2015, 2017, 2019, 2021 | 5/18  (28%)   |
+|   [ICML](https://icml.cc/)                   | 2013-2022	                  | 10/21 (48%)   |
+|   [NeurIPS](https://nips.cc/)	               | 1987-2021                    | 35/35 (100%)  |
+|   [UAI](https://www.auai.org/)               | 2019-2022                    | 4/37  (11%)   | 
 
 
 Download research papers:
 1. Containing keywords in the title
 2. By your favorite authors
-3. By your favorite affiliations/ labs
 
-Currently only supports NeurIPS. Looking for contributors to expand this to other conferences and expand the feature set!
+*Metadata currently does not contain institution data
 
 ## Usage
 
