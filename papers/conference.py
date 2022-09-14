@@ -29,8 +29,8 @@ class Conference(object):
 			'uai': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/uai',
 			'cvpr': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/cvpr',
 			'iccv': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iccv',
-			'wacv': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/wacv'
-			# 'iclr': '',
+			'wacv': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/wacv',
+			'iclr': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iclr',
 			# 'emnlp': '',
 			# 'aaai': '',
 			# 'sysml': '',
