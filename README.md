@@ -34,7 +34,8 @@ template       File name format for saving pdfs e.g. `year-author-title` will sa
                as the year the paper was last published, followed by the first author's name, 
                followed by the title, all in lower case. You can rearrange these three pieces.
 save_dir       Directory to save pdfs to
-mode           Default mode "download" is to download all papers. If set to "search", it will just find available papers, but will not download them.
+mode           Default mode "download" is to download all papers. If set to "search", it will 
+               just find available papers, but will not download them.
 ```
 
 ```
