@@ -5,13 +5,11 @@ Date: 11/8/2020
 import os
 import re
 import json
-import platform
 import unicodedata
 import urllib.request
 from datetime import date
 from urllib.error import URLError, HTTPError
 from threading import Thread
-from multiprocessing import Process, cpu_count
 from pathlib import Path
 
 from tqdm import tqdm

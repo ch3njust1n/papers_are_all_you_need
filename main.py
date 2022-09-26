@@ -6,6 +6,7 @@ Date: 11/5/2020
 '''
 import os
 import time
+import logging
 import configparser
 from itertools import product
 from multiprocessing import Process, Manager, cpu_count
@@ -25,13 +26,15 @@ title_kw 	   (list) Title keywords
 author_kw 	   (list) Author names
 affiliation_kw (list) Afiliation/lab names
 '''
-def collect(conferences, years, save_dir, template, title_kw, author_kw, affiliation_kw, mode='download'):
+def collect(conferences, years, save_dir, template, title_kw, author_kw, affiliation_kw, mode='download', logname='default.log'):
+	logger = logging.getLogger(f'{logname}')
+ 
 	conferences = utils.parse_conferences(conferences)
 	years = utils.get_years(years)
 	total = len(conferences) * len(years)
  
 	conf_years = product(conferences, years)
- 
+  
 	with tqdm(total=total) as pbar:
 		for conf, yr in conf_years:
 			cf = utils.get_conf(conf, yr)
@@ -47,6 +50,9 @@ def collect(conferences, years, save_dir, template, title_kw, author_kw, affilia
 
 				if mode == 'download':
 					utils.scrape(papers, yr, template, save_dir)
+				if mode == 'search':
+					for p in papers:
+						if p: logger.info(p['title'])
 			
 			pbar.update(1)
 
@@ -56,7 +62,7 @@ def main():
 	config = configparser.ConfigParser(allow_no_value=True)
 	config.read('config.ini')
 	cfg = config['DEFAULT']
-
+ 
 	conferences = cfg['conference']
 	years = cfg['year']
 	title_kw = cfg['title_kw'].split(',')
@@ -65,6 +71,14 @@ def main():
 	template = cfg['template']
 	save_dir = cfg['save_dir']
 	mode = cfg['mode']
+	
+	logname = save_dir.split('/')[-1]+'.log'
+	logging.basicConfig(
+     	level=logging.INFO, 
+    	filename=logname,
+     	filemode='w', 
+      	format='%(name)s - %(levelname)s - %(message)s'
+    )
 
 	if not os.path.isdir(save_dir):
 		os.makedirs(save_dir, exist_ok=True) 
@@ -73,7 +87,7 @@ def main():
 		raise ValueError(f'Invalid mode: {mode}')
 
 	start_time = time.perf_counter()
-	collect(conferences, years, save_dir, template, title_kw, author_kw, affiliation_kw, mode=mode)
+	collect(conferences, years, save_dir, template, title_kw, author_kw, affiliation_kw, mode=mode, logname=logname)
 	end_time = time.perf_counter()
 
 	print(f'runtime: {end_time - start_time} (sec)')
