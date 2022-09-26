@@ -47,6 +47,7 @@ author_kw =
 affiliation_kw = 
 template = year-author-title
 save_dir = /Downloads/neurips
+mode = download
 ```
 and then run
 
