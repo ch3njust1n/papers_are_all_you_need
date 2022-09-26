@@ -8,6 +8,7 @@ import json
 import platform
 import unicodedata
 import urllib.request
+from datetime import date
 from urllib.error import URLError, HTTPError
 from threading import Thread
 from multiprocessing import Process, cpu_count
@@ -16,6 +17,12 @@ from pathlib import Path
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 from colorama import Fore, Style
+
+from papers.conference import Conference
+
+CONFERENCES = {'nips', 'neurips', 'icml', 'aistats', 'corl', 'acml', 'cvpr', 'uai', 'iccv', 'wacv', 'iclr'}
+MIN_YEAR = 1970
+MAX_YEAR = date.today().year
 
 
 '''
@@ -36,6 +43,7 @@ Get the year generator
 : For range of years e.g. 2010:2020
 , List of years, not necessarily consecutive list e.g. 1987, 2018, 2020
 # Single numbers for just that one year e.g. 2020
+* All years from MIN_YEAR to MAX_YEAR inclusive
 
 inputs:
 year (str) Year designation
@@ -45,11 +53,15 @@ years (list) List of years
 '''
 def get_years(year):
 
-	if len(year) == 0: []
+	if not year:
+		raise ValueError('Invalid years specified')
+
+	if year == '*':
+		return range(MIN_YEAR, MAX_YEAR + 1)
 
 	if re.match('\d+:\d+', year):
 		year = year.split(':') 
-		return range(int(year[0]), int(year[1])+1)
+		return range(int(year[0]), int(year[1]) + 1)
 
 	return [y for y in year.split(',') if len(y) > 0]
 
@@ -286,3 +298,41 @@ def scrape(papers, year, template, save_dir):
 	_, _, files = next(os.walk(save_dir))
 	successes = len([f for f in files if f.endswith('.pdf')])
 	print(f'downloaded {successes} papers')
+ 
+ 
+'''
+inputs:
+name (str) Name of conference
+year (str) Year of conference
+
+outputs:
+conference (conference)
+'''
+def get_conf(name, year):
+
+	name = name.lower().strip()
+
+	if name in CONFERENCES:
+		return Conference(name, year)
+
+	print(f'{name} does not exist')
+	return None
+
+
+'''
+inputs:
+conferences (str) String list of conferences or special characters
+
+outputs:
+conferences (list) List of conference names
+'''
+def parse_conferences(conferences):
+    if conferences == '*':
+        return list(CONFERENCES)
+    
+    confs = [c.lower().strip() for c in conferences.split(',')]
+    
+    if not confs or not set(confs).issubset(CONFERENCES):
+        raise ValueError('One or more of the conference names are invalid or not supported.')
+    
+    return confs

@@ -1,17 +1,9 @@
 '''
 '''
 import sys
-import datetime
 import json
-from json.decoder import JSONDecodeError
 import urllib.request
-from urllib.error import URLError, HTTPError
-from multiprocessing import Manager
-from threading import Thread
-from papers import utils
 
-from tqdm import tqdm
-from bs4 import BeautifulSoup
 from colorama import Fore, Style
 
 
@@ -21,16 +13,16 @@ class Conference(object):
 		self.name = name
 		self.year = str(year)
 		self.conf = {
-			'neurips': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/neurips',
-			'icml': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/icml',
-			'aistats': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/aistats',
-			'acml': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/acml',
-			'corl': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/corl',
-			'uai': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/uai',
-			'cvpr': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/cvpr',
-			'iccv': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iccv',
-			'wacv': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/wacv',
-			'iclr': 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iclr',
+			frozenset({'nips', 'neurips'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/neurips',
+			frozenset({'icml'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/icml',
+			frozenset({'aistats'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/aistats',
+			frozenset({'acml'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/acml',
+			frozenset({'corl'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/corl',
+			frozenset({'uai'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/uai',
+			frozenset({'cvpr'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/cvpr',
+			frozenset({'iccv'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iccv',
+			frozenset({'wacv'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/wacv',
+			frozenset({'iclr'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iclr',
 			# 'emnlp': '',
 			# 'aaai': '',
 			# 'sysml': '',
@@ -44,7 +36,14 @@ class Conference(object):
 			# 'iccv': '',
 			# 'eccv': ''
 		}
-		self.repo = self.conf[name]
+  
+		for c in self.conf.keys():
+			if name in c:
+				self.repo = self.conf[c]
+				break
+
+		if not self.repo:
+			raise ValueError(f'Conference {name} not supported.')
 
 
 	'''
@@ -56,8 +55,12 @@ class Conference(object):
 	def accepted_papers(self):
 
 		url = '/'.join([self.repo, f'{self.name}_{self.year}.json'])
-		with urllib.request.urlopen(url) as file:
-			return json.loads(file.read().decode())
+  
+		try:
+			with urllib.request.urlopen(url) as file:
+				return json.loads(file.read().decode())
+		except urllib.error.HTTPError:
+			return []
 
 
 	'''
@@ -86,7 +89,10 @@ class Conference(object):
 		has_affiliation = lambda aff, authors: any(a in authors.lower() for a in aff)
 
 		for p in papers:
+			if not p: continue
+   
 			title = p['title']
+			
 			try:
 				authors = [' '.join([' '.join(a['given_name']), a['family_name']]) for a in p['authors']]
 				affiliations = [a['institution'] for a in p['authors']]

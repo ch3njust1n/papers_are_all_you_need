@@ -25,8 +25,8 @@ Edit `config.ini` with your parameters. It's ok to leave `title_kw`, `author_kw`
 ### Confirguation options
 
 ```
-conference     Name of conference
-year           Year(s) of conference
+conference     Name of conferences
+year           Year(s) of conference(s)
 title_kw       Keywords to search for in title of papers
 author_kw      Names of authors to search for
 affiliation_kw Names of affiliations/labs to search for
@@ -34,6 +34,7 @@ template       File name format for saving pdfs e.g. `year-author-title` will sa
                as the year the paper was last published, followed by the first author's name, 
                followed by the title, all in lower case. You can rearrange these three pieces.
 save_dir       Directory to save pdfs to
+mode           Default mode "download" is to download all papers. If set to "search", it will just find available papers, but will not download them.
 ```
 
 ```
@@ -50,6 +51,19 @@ and then run
 
 `python main.py`
 
+### Search all conferences
+```
+[DEFAULT]
+conference = *
+year = 2021, 2022
+title_kw = graph, message-passing, node
+author_kw = 
+affiliation_kw = 
+template = year-author-title
+save_dir = /Downloads/all_confs_2021_2022
+mode = search
+```
+
 ### Search year range
 ```
 [DEFAULT]
@@ -60,6 +74,20 @@ author_kw =
 affiliation_kw = 
 template = year-author-title
 save_dir = /Downloads/neurips
+mode = search
+```
+
+### Search every proceeding across all conferences
+```
+[DEFAULT]
+conference = *
+year = *
+title_kw = graph, message-passing, node
+author_kw = 
+affiliation_kw = 
+template = year-author-title
+save_dir = /Downloads/grid_search
+mode = search
 ```
 
 ### Search specific years
@@ -72,4 +100,5 @@ author_kw =
 affiliation_kw = 
 template = year-author-title
 save_dir = /Downloads/neurips
+mode = download
 ```
