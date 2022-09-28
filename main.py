@@ -83,7 +83,7 @@ def main():
 	if not os.path.isdir(save_dir):
 		os.makedirs(save_dir, exist_ok=True) 
   
-	if not mode.lower().strip() in {'search', 'searches', 'dowload', 'downloads'}:
+	if not mode.lower().strip() in {'search', 'searches', 'download', 'downloads'}:
 		raise ValueError(f'Invalid mode: {mode}')
 
 	start_time = time.perf_counter()
