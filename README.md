@@ -16,6 +16,11 @@
 |   [WACV](https://www.thecvf.com/)            | 2020-2022                    | 3/22  (14%)  | 100%          | 100%          | 0%            | 
 
 
+## Setup
+
+1. `chmod +x setup.sh`
+2. `./setup.sh`
+
 
 ## Usage
 
