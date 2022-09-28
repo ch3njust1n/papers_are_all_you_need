@@ -101,8 +101,9 @@ class Conference(object):
 				sys.exit()
 
 
-			if (title_kw and has_title(title_kw, title)) or (author_kw and has_author(author_kw, authors)) or\
-				(affiliation_kw and has_affiliation(affiliation_kw, affiliations)):
+			if (title_kw and has_title(title_kw, title)) or '*' in title_kw or\
+			   (author_kw and has_author(author_kw, authors)) or\
+			   (affiliation_kw and has_affiliation(affiliation_kw, affiliations)):
 
 				extracted.append({
 					'title': title, 

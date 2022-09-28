@@ -104,3 +104,16 @@ template = year-author-title
 save_dir = /Downloads/neurips
 mode = download
 ```
+
+### Download all titles
+```
+[DEFAULT]
+conference = neurips
+year = 1999, 2012, 2018
+title_kw = *
+author_kw = 
+affiliation_kw = 
+template = year-author-title
+save_dir = /Downloads/neurips
+mode = download
+```
