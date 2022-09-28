@@ -88,7 +88,7 @@ class Collector(object):
 					try:
 						with urllib.request.urlopen(link) as resp, open(save_path, 'wb') as out:
 							save_name = f'{save_path}_{i}.pdf' if i > 0 else f'{save_path}.pdf'
-							file, headers = urllib.request.urlretrieve(link, save_name)
+							file, _ = urllib.request.urlretrieve(link, save_name)
 							if file: files.append(save_name)
 					except InvalidURL as e:
 						self.log.debug(f'{e} - {filename}')

@@ -14,7 +14,21 @@ from bs4 import BeautifulSoup
 
 from papers.conference import Conference
 
-CONFERENCES = {'nips', 'neurips', 'icml', 'aistats', 'corl', 'acml', 'cvpr', 'uai', 'iccv', 'wacv', 'iclr'}
+CONFERENCES = {
+	'aistats',
+	'acml', 
+	'corl',
+	'cvpr',
+	'iccv',
+	'iclr',
+	'icml',
+	'mlsys',
+	'neurips',
+	'nips'
+	'uai',
+	'wacv'
+}
+
 MIN_YEAR = 1970
 MAX_YEAR = date.today().year
 
