@@ -9,12 +9,8 @@ import unicodedata
 import urllib.request
 from datetime import date
 from urllib.error import URLError, HTTPError
-from threading import Thread
-from pathlib import Path
 
-from tqdm import tqdm
 from bs4 import BeautifulSoup
-from colorama import Fore, Style
 
 from papers.conference import Conference
 
@@ -62,30 +58,6 @@ def get_years(year):
 		return range(int(year[0]), int(year[1]) + 1)
 
 	return [y for y in year.split(',') if len(y) > 0]
-
-
-'''
-Format filename
-
-inputs:
-filename 	(str) Format for filename. Any permutation of 'year-auth-title'. Does not
-			   need to contain all three.
-year  	 	(str) Year of paper
-name  	 	(str) Author name
-affiliation (str) Affiliation
-title 	 	(str) Paper title
-
-outputs:
-filename (str) Formatted filename
-'''
-def format_filename(filename, year, auth, affiliation, title):
-
-	title = title.lower().replace(':', '').replace('/', ' ')
-	filename = filename.replace('author', auth.lower())
-	filename = filename.replace('year', str(year))
-	filename = filename.replace('affiliation', affiliation)
-
-	return filename.replace('title', title)
 
 
 '''
@@ -138,32 +110,6 @@ def verify_pdf(pdf_id, title, version=''):
 
 
 '''
-inputs:
-authors          (list)  		  List of strings of authors
-affiliations 	 (list) 		  List of author affiliations
-first_name       (bool, optional) Extract first name of first author only. Default: False.
-last_name        (bool, optional) Extract last name of first author only. Default: False.
-author_only 	 (bool, optional) Extract first author's name only. Default: True.
-affiliation_only (bool, optional) Extract first author's affiliation only. Default: False.
-
-outputs:
-name (str) First author
-aff  (str) First author's affiliation
-'''
-def get_first_author(authors, affiliations, last_name=False, first_name=False, author_only=True, affilition_only=False):
-
-	name, aff = authors[0], affiliations[0]
-
-	if first_name and author_only: return name.split(' ')[0], ''
-	if last_name and author_only: return name.split(' ')[-1], ''
-	if first_name and not author_only: return name.split(' ')[0], aff
-	if last_name and not author_only: return name.split(' ')[-1], aff
-	if author_only: return name, ''
-	if affilition_only: return '', aff
-	return name, aff
-
-
-'''
 Remove control characters
 
 inputs:
@@ -211,93 +157,6 @@ def get_arxiv_link(title, latest=True, version=''):
 
 	return url, updated, authors
 
-
-'''
-Download a paper.
-
-inputs:
-url      (str) Link to paper
-save_dir (str) Directory to save to
-filename (str) Name of file
-
-outputs:
-True if downloaded, else False
-'''
-def download(url, save_dir, filename):
-	paper_urls = []
-	if isinstance(url, str): paper_urls.append(url)
-	if isinstance(url, list): paper_urls.extend(url)
-
-	try:
-		save_path = os.path.join(save_dir, filename)
-
-		if not Path(save_path).is_file():
-			for i, link in enumerate(paper_urls):
-				with urllib.request.urlopen(link) as resp, open(save_path, 'wb') as out:
-					file, headers = urllib.request.urlretrieve(link, f'{save_path}_{i}.pdf' if i > 0 else f'{save_path}.pdf')
-
-			return len(file) > 0
-		else:
-			return True
-	except URLError as e:
-		return False
-
-
-'''
-Format and download paper
-
-inputs:
-title        (str)  Paper title
-authors      (list) Authors
-affiliations (list) Author affiliations
-url          (str)  PDF url
-year         (str)  Publication year
-template     (str)  File name template
-save_dir     (str)  Save directory
-'''
-def save_paper(title, authors, affiliations, url, year, template, save_dir):
-
-	auth, aff = get_first_author(authors, affiliations, last_name=True)
-	filename = format_filename(template, year, auth, aff, title)
-	status = download(url, save_dir, filename)
-	delete_zerofiles(save_dir)
-	
-	if not status: print(f'{Fore.RED}err{Style.RESET_ALL}: {title}')
-
-
-'''
-Main execution loop for scraping and downloading papers.
-
-inputs:
-papers   (list) List of dicts of paper meta data
-save_dir (str)  Save directory
-'''
-def scrape(papers, year, template, save_dir):
-
-	def batch(iterable, size=1):
-
-		l = len(iterable)
-		for i in range(0, l, size):
-			yield iterable[i:min(i + size, l)]
-
-	pbar = tqdm(total=len(papers))
-
-	for block in batch(papers, 16):
-		procs = []
-		for paper in block:
-			args = (paper['title'], paper['authors'], paper['affiliations'], paper['url'], year, template, save_dir,)
-			procs.append(Thread(target=save_paper, args=args))
-			
-		for p in procs: p.start()
-		for p in procs: p.join()
-
-		pbar.update(len(block))
-
-	pbar.close()
-	_, _, files = next(os.walk(save_dir))
-	successes = len([f for f in files if f.endswith('.pdf')])
-	print(f'downloaded {successes} papers')
- 
  
 '''
 inputs:
