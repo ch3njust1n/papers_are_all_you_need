@@ -85,7 +85,7 @@ def format_filename(filename, year, auth, affiliation, title):
 	filename = filename.replace('year', str(year))
 	filename = filename.replace('affiliation', affiliation)
 
-	return filename.replace('title', title)+'.pdf'
+	return filename.replace('title', title)
 
 
 '''
@@ -234,7 +234,7 @@ def download(url, save_dir, filename):
 		if not Path(save_path).is_file():
 			for i, link in enumerate(paper_urls):
 				with urllib.request.urlopen(link) as resp, open(save_path, 'wb') as out:
-					file, headers = urllib.request.urlretrieve(link, f'{save_path}_{i}')
+					file, headers = urllib.request.urlretrieve(link, f'{save_path}_{i}.pdf')
 
 			return len(file) > 0
 		else:
