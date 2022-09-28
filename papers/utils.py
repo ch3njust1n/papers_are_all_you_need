@@ -234,7 +234,7 @@ def download(url, save_dir, filename):
 		if not Path(save_path).is_file():
 			for i, link in enumerate(paper_urls):
 				with urllib.request.urlopen(link) as resp, open(save_path, 'wb') as out:
-					file, headers = urllib.request.urlretrieve(link, f'{save_path}_{i}.pdf')
+					file, headers = urllib.request.urlretrieve(link, f'{save_path}_{i}.pdf' if i > 0 else f'{save_path}.pdf')
 
 			return len(file) > 0
 		else:
@@ -260,6 +260,7 @@ def save_paper(title, authors, affiliations, url, year, template, save_dir):
 	auth, aff = get_first_author(authors, affiliations, last_name=True)
 	filename = format_filename(template, year, auth, aff, title)
 	status = download(url, save_dir, filename)
+	delete_zerofiles(save_dir)
 	
 	if not status: print(f'{Fore.RED}err{Style.RESET_ALL}: {title}')
 
@@ -325,12 +326,26 @@ outputs:
 conferences (list) List of conference names
 '''
 def parse_conferences(conferences):
-    if conferences == '*':
-        return list(CONFERENCES)
-    
-    confs = [c.lower().strip() for c in conferences.split(',')]
-    
-    if not confs or not set(confs).issubset(CONFERENCES):
-        raise ValueError('One or more of the conference names are invalid or not supported.')
-    
-    return confs
+	if conferences == '*':
+		return list(CONFERENCES)
+	
+	confs = [c.lower().strip() for c in conferences.split(',')]
+	
+	if not confs or not set(confs).issubset(CONFERENCES):
+		raise ValueError('One or more of the conference names are invalid or not supported.')
+	
+	return confs
+
+
+'''
+inputs:
+dirname (string) Directory containing files to delete
+'''
+def delete_zerofiles(dirname): 
+	for filename in os.listdir(dirname): 
+		filepath = os.path.join(dirname, filename)
+		try:
+			if os.path.isfile(filepath) and os.stat(filepath).st_size == 0: 
+				os.remove(filepath)
+		except FileNotFoundError:
+			pass
