@@ -38,6 +38,8 @@ class Conference(object):
 			# 'eccv': ''
 		}
   
+		self.repo = None
+  
 		for c in self.conf.keys():
 			if name in c:
 				self.repo = self.conf[c]

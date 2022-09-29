@@ -1,6 +1,7 @@
 '''
 '''
 
+from email.policy import default
 import os
 import json
 import logging
@@ -11,6 +12,7 @@ from itertools import product
 from threading import Thread
 from urllib.error import URLError
 from http.client import InvalidURL
+from collections import defaultdict
 
 import redis
 from tqdm import tqdm
@@ -33,6 +35,10 @@ class Collector(object):
 		self.log = logging.getLogger(self.logname)
 		self.save_dir = save_dir
 		self.cache_dir = '.cache'
+  
+		self.DOWNLOAD_MODE = {'download', 'downloads'}
+		self.SEARCH_MODE = {'search', 'searches'}
+		self.STATS_MODE = {'stats', 'statistics', 'stat'}
   
 		if not os.path.exists(self.cache_dir):
 			os.mkdir(self.cache_dir)
@@ -234,6 +240,7 @@ class Collector(object):
 		conf_years = product(conferences, years)
 	
 		with tqdm(total=total) as pbar:
+			stats = defaultdict(int)
 			for conf, yr in conf_years:
 				cf = utils.get_conf(conf, yr)
 
@@ -247,12 +254,19 @@ class Collector(object):
 						papers = cf.query_papers(papers, title_kw=title_kw, author_kw=author_kw, affiliation_kw=affiliation_kw)
 						self.log.info(f'{conf} {yr} - found {len(papers)} papers of {total_accepted} total accepted papers')
 		
-						if mode == 'download':
+						if mode in self.DOWNLOAD_MODE:
 							self.scrape(papers, yr, template, self.save_dir)
-						if mode == 'search':
+						if mode in self.SEARCH_MODE:
 							for p in papers:
 								if p: self.log.info(p['title'])
+						if mode in self.STATS_MODE:
+							stats[f'{conf}-{yr}'] = len(papers)
 				except Exception as e:
 					self.log.debug(f'{Fore.RED}err{Style.RESET_ALL}: {e}')
 				
 				pbar.update(1)
+    
+			if mode in self.STATS_MODE:
+				with open('stats.json', 'w') as f:
+					json.dump(stats, f)
+					print(sum(stats.values()))
