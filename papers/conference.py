@@ -26,7 +26,6 @@ class Conference(object):
 			frozenset({'mlsys', 'mlsystems', 'mlsystem'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/mlsys',
 			# 'emnlp': '',
 			# 'aaai': '',
-			# 'sysml': '',
 			# 'naacl': '',
 			# 'icme': '',
 			# 'chil': '',
@@ -34,7 +33,6 @@ class Conference(object):
 			# 'ijcai': '',
 			# 'acl': '',
 			# 'sigir': '',
-			# 'iccv': '',
 			# 'eccv': ''
 		}
   
