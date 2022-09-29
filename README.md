@@ -1,7 +1,7 @@
 # Papers Are All You Need
 
 
-**[Metadata](https://github.com/ch3njust1n/conference_metadata) coverage** ![](https://img.shields.io/badge/papers->45,006-informational) ![](https://img.shields.io/badge/size-133.13_GB-informational)
+**[Metadata](https://github.com/ch3njust1n/conference_metadata) coverage** ![](https://img.shields.io/badge/papers-45,006-informational) ![](https://img.shields.io/badge/size-133.13_GB-informational)
 |  Conference 	                               |  Years 	                  | Proceedings  | Links         | Authors       | Institutions  |
 |----------------------------------------------|------------------------------|--------------|---------------|---------------|---------------|
 |   [ACML](https://www.acml-conf.org/)         | 2010-2021                    | 12/13 (92%)  | 100%          | 100%          | 0%            |
