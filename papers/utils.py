@@ -24,7 +24,7 @@ CONFERENCES = {
 	'icml',
 	'mlsys',
 	'neurips',
-	'nips'
+	'nips',
 	'uai',
 	'wacv'
 }

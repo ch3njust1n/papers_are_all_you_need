@@ -1,7 +1,7 @@
 # Papers Are All You Need
 
 
-**[Metadata](https://github.com/ch3njust1n/conference_metadata) coverage**
+**[Metadata](https://github.com/ch3njust1n/conference_metadata) coverage** ![](https://img.shields.io/badge/papers->45,006-informational) ![](https://img.shields.io/badge/size-133.13_GB-informational)
 |  Conference 	                               |  Years 	                  | Proceedings  | Links         | Authors       | Institutions  |
 |----------------------------------------------|------------------------------|--------------|---------------|---------------|---------------|
 |   [ACML](https://www.acml-conf.org/)         | 2010-2021                    | 12/13 (92%)  | 100%          | 100%          | 0%            |
@@ -40,8 +40,10 @@ template       File name format for saving pdfs e.g. `year-author-title` will sa
                as the year the paper was last published, followed by the first author's name, 
                followed by the title, all in lower case. You can rearrange these three pieces.
 save_dir       Directory to save pdfs to
-mode           Default mode "download" is to download all papers. If set to "search", it will 
-               just find available papers, but will not download them.
+mode           Default mode "download".
+               download - Download all papers.
+               search   - Search for papers and save to log. Will not download papers.
+               stats    - Count number of papers in each conference by year. Saves to json stats.json.
 ```
 
 ```
