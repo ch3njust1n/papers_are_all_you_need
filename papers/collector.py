@@ -164,14 +164,17 @@ class Collector(object):
 	save_dir     (str)  Save directory
 	'''
 	def save_paper(self, title, authors, affiliations, url, year, template, save_dir):
-	 
-		auth, aff = self.get_first_author(authors, affiliations, last_name=True)
-		filename = self.format_filename(template, year, auth, aff, title)
-		ok = self.download(url, save_dir, filename)
-		self.cache.set(title.lower(), int(ok))
-		utils.delete_zerofiles(save_dir)
-		
-		if not ok:
+     
+		try:
+			auth, aff = self.get_first_author(authors, affiliations, last_name=True)
+			filename = self.format_filename(template, year, auth, aff, title)
+			ok = self.download(url, save_dir, filename)
+			self.cache.set(title.lower(), int(ok))
+			utils.delete_zerofiles(save_dir)
+			
+			if not ok:
+				self.log.debug(f'{Fore.RED}err{Style.RESET_ALL}: {title}')
+		except Exception as e:
 			self.log.debug(f'{Fore.RED}err{Style.RESET_ALL}: {title}')
 
 	
@@ -253,5 +256,3 @@ class Collector(object):
 					self.log.debug(f'{Fore.RED}err{Style.RESET_ALL}: {e}')
 				
 				pbar.update(1)
-		
-		self.cache.flushall()
