@@ -29,14 +29,17 @@ def main():
 	save_dir = cfg['save_dir']
 	mode = cfg['mode']
 	clear_cache = utils.convert_bool(cfg['clear_cache'])
+
+	if not os.path.exists('./.logs'):
+		os.mkdir('./.log')
 	
-	logname = save_dir.split('/')[-1]+'.log'
+	logname = f"./.log/{save_dir.split('/')[-1]}.log"
 	logging.basicConfig(
-     	level=logging.INFO, 
-    	filename=logname,
-     	filemode='w', 
-      	format='%(name)s - %(asctime)s - %(levelname)s - %(message)s'
-    )
+	 	level=logging.INFO, 
+		filename=logname,
+	 	filemode='w', 
+	  	format='%(asctime)s - %(levelname)s - %(message)s'
+	)
 
 	if not os.path.isdir(save_dir):
 		os.makedirs(save_dir, exist_ok=True) 
