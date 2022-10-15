@@ -24,7 +24,7 @@ class Conference(object):
 			frozenset({'wacv'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/wacv',
 			frozenset({'iclr'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iclr',
 			frozenset({'mlsys', 'mlsystems', 'mlsystem'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/mlsys',
-			frozenset({'ijcai'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/ijcai', 
+			frozenset({'ijcai'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/ijcai/', 
 			# 'emnlp': '',
 			# 'aaai': '',
 			# 'naacl': '',

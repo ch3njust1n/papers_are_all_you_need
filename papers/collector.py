@@ -1,13 +1,14 @@
 '''
 '''
-
-from email.policy import default
 import os
+import sys
+import time
 import json
 import string
 import logging
-from re import S
+import subprocess
 import urllib.request
+import multiprocessing as mp
 from pathlib import Path
 from itertools import product
 from threading import Thread
@@ -27,11 +28,14 @@ class Collector(object):
 	inputs:
 	logname  (str) Log name
 	save_dir (str) Directory to save the collected results to
+	host
+	port
+	clear_cache
 	'''
-	def __init__(self, logname, save_dir, host='localhost', port=6379):
+	def __init__(self, logname, save_dir, host='localhost', port=6379, clear_cache=False):
 		self.host = host
 		self.port = port
-		self.cache = redis.Redis(host=host, port=port)
+		self.cache = redis.Redis(host=host, port=port, socket_connect_timeout=1)
 		self.logname = logname
 		self.log = logging.getLogger(self.logname)
 		self.save_dir = save_dir
@@ -43,6 +47,23 @@ class Collector(object):
   
 		if not os.path.exists(self.cache_dir):
 			os.mkdir(self.cache_dir)
+   
+		self.redis_status()
+  
+		if clear_cache:
+			self.cache.flushdb()
+  
+   
+	'''
+	Check if Redis server is available. Try to run subprocess, else exit.
+	'''
+	def redis_status(self):
+		try:
+			self.cache.ping()
+			return True
+		except redis.exceptions.ConnectionError as e:
+			self.log.info(f'Redis unavailable: {e}.Run $ redis-server in a separate terminal.')
+			sys.exit(0)
 		
   
 	'''
@@ -173,13 +194,12 @@ class Collector(object):
 	save_dir     (str)  Save directory
 	'''
 	def save_paper(self, title, authors, affiliations, url, year, template, save_dir):
-     
+	 
 		try:
 			auth, aff = self.get_first_author(authors, affiliations, last_name=True)
 			filename = self.format_filename(template, year, auth, aff, title)
 			ok = self.download(url, save_dir, filename)
 			self.cache.set(title.lower(), int(ok))
-			utils.delete_zerofiles(save_dir)
 			
 			if not ok:
 				self.log.debug(f'{Fore.RED}err{Style.RESET_ALL}: {title}')
@@ -195,7 +215,6 @@ class Collector(object):
 	save_dir (str)  Save directory
 	'''
 	def scrape(self, papers, year, template, save_dir):
-
 		def batch(iterable, size=1):
 
 			l = len(iterable)
@@ -212,6 +231,7 @@ class Collector(object):
 			for p in procs: p.start()
 			for p in procs: p.join()
 
+		utils.delete_zerofiles(save_dir)
 		_, _, files = next(os.walk(save_dir))
 		successes = len([f for f in files if f.endswith('.pdf')])
 		self.log.info(f'downloaded {successes} papers')
@@ -268,7 +288,7 @@ class Collector(object):
 					self.log.debug(f'{Fore.RED}err{Style.RESET_ALL}: {e}')
 				
 				pbar.update(1)
-    
+	
 			if mode in self.STATS_MODE:
 				with open('stats.json', 'w') as f:
 					json.dump(stats, f)
