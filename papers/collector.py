@@ -4,6 +4,7 @@
 from email.policy import default
 import os
 import json
+import string
 import logging
 from re import S
 import urllib.request
@@ -84,9 +85,11 @@ class Collector(object):
 		paper_urls = []
 		if isinstance(url, str): paper_urls.append(url)
 		if isinstance(url, list): paper_urls.extend(url)
+  
+		remove_trailing_char = lambda x: x[:-1] if x[-1] in string.punctuation else x
 
 		try:
-			save_path = os.path.join(save_dir, filename)
+			save_path = remove_trailing_char(os.path.join(save_dir, filename).strip())
 
 			if not Path(save_path).is_file():
 				files = []
