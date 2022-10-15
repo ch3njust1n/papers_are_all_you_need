@@ -22,6 +22,7 @@ CONFERENCES = {
 	'iccv',
 	'iclr',
 	'icml',
+	'ijcai',
 	'mlsys',
 	'neurips',
 	'nips',
@@ -29,7 +30,7 @@ CONFERENCES = {
 	'wacv'
 }
 
-MIN_YEAR = 1970
+MIN_YEAR = 1969
 MAX_YEAR = date.today().year
 
 

@@ -9,6 +9,9 @@ import time
 import logging
 import configparser
 
+import redis
+
+import utils
 from papers.collector import Collector
 
 def main():
@@ -25,13 +28,14 @@ def main():
 	template = cfg['template']
 	save_dir = cfg['save_dir']
 	mode = cfg['mode']
+	clear_cache = utils.convert_bool(cfg['clear_cache'])
 	
 	logname = save_dir.split('/')[-1]+'.log'
 	logging.basicConfig(
      	level=logging.INFO, 
     	filename=logname,
      	filemode='w', 
-      	format='%(name)s - %(levelname)s - %(message)s'
+      	format='%(name)s - %(asctime)s - %(levelname)s - %(message)s'
     )
 
 	if not os.path.isdir(save_dir):
@@ -41,7 +45,7 @@ def main():
 		raise ValueError(f'Invalid mode: {mode}')
 
 	start_time = time.perf_counter()
-	clt = Collector(logname, save_dir)
+	clt = Collector(logname, save_dir, clear_cache=clear_cache)
 	clt.collect(conferences, years, template, title_kw, author_kw, affiliation_kw, mode=mode, logname=logname)
 	end_time = time.perf_counter()
 

@@ -24,9 +24,9 @@ class Conference(object):
 			frozenset({'wacv'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/wacv',
 			frozenset({'iclr'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/iclr',
 			frozenset({'mlsys', 'mlsystems', 'mlsystem'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/mlsys',
+			frozenset({'ijcai'}): 'https://raw.githubusercontent.com/ch3njust1n/conference_metadata/main/api/ijcai/', 
 			# 'emnlp': '',
 			# 'aaai': '',
-			# 'sysml': '',
 			# 'naacl': '',
 			# 'icme': '',
 			# 'chil': '',
@@ -34,7 +34,6 @@ class Conference(object):
 			# 'ijcai': '',
 			# 'acl': '',
 			# 'sigir': '',
-			# 'iccv': '',
 			# 'eccv': ''
 		}
   
@@ -110,7 +109,8 @@ class Conference(object):
 
 				extracted.append({
 					'title': title, 
-					'authors': authors, 
+					'authors': authors,
+					'abstract': '',
 					'affiliations': affiliations, 
 					'award': p.get('award', None),
 					'hash': p.get('hash', None), 
