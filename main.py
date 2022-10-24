@@ -31,7 +31,7 @@ def main():
 	clear_cache = utils.convert_bool(cfg['clear_cache'])
 
 	if not os.path.exists('./.logs'):
-		os.mkdir('./.log')
+		os.mkdir('./.logs')
 	
 	logname = f"./.log/{save_dir.split('/')[-1]}.log"
 	logging.basicConfig(
