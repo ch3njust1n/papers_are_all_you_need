@@ -26,6 +26,8 @@
 
 ## Usage
 
+Run `redis-server` in a separate terminal.
+
 Edit `config.ini` with your parameters. It's ok to leave `title_kw`, `author_kw`, or `affiliation_kw` blank.
 
 
