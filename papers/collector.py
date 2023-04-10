@@ -137,6 +137,7 @@ class Collector(object):
                                 files.append(save_name)
                     except InvalidURL as e:
                         self.log.debug(f"{e} - {filename}")
+                        return False
 
                 return all(os.path.exists(f) for f in files)
             else:
